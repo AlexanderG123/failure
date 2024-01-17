@@ -1,0 +1,123 @@
+---
+title: "Exploring Homicide Trends in Toronto: A Seventeen-Year Statistical Overview (2004-2020)"
+author: "Alexander Guarasci"
+date: "`r format(Sys.Date(), '%B %d, %Y')`" # This will add the current date
+format: pdf
+abstract: |
+ This study investigates homicide trends in Toronto from 2004 to 2020, utilizing data from the Toronto Police Service. We found a fluctuating increase in homicide rates, particularly in certain neighborhoods. This research is significant as it provides insights into urban violence in a major Canadian city highlighting the need for targeted public safety strategies. It contributes to the understanding of urban crime dynamics in multicultural urban settings.
+ 
+ #maybe make it more about gun control?
+---
+
+```{r}
+
+```
+
+
+# Introduction
+
+Write your introduction here. This should provide background information and state the purpose of the paper.
+
+
+
+# Data
+
+The data was gathered from OpenDataToronto, a city funded source with the explicit goal of making the city of Toronto more “transparent, accountable, participatory and accessible” (source opendata toronto.com). The dataset used in this analysis was called “Police Annual Statistical Report - Homicides” and it was published by Toronto Police Services.  In order to perform the analysis, the programming language for data analysis, visualization and statistical investigation R was used (Source R), along with Tidyverse (Source), and Janitor(Source).
+
+The Dataset:
+The dataset used was the aforementioned “Police Annual Statistical Report - Homicides”, and it includes data from every homicide under the Toronto Police Services Jurisdiction from 2004-2020. 
+
+Variables of Interest:
+
+
+
+
+
+
+This data includes the date of the event, the type of homicide (ie. Shooting, Stabbing or other), as well as the neighbourhood in which the homicide took place.
+
+From the outset, our analysis begins with an examination of broad yearly trends in homicides over from 2004 to 2020
+
+[bar chart of homicides by year, Figure 2.1]
+
+```{r}
+data <- read_csv("/Users/alexanderguarasci/inputs/data/edited_data.csv")
+homicides_by_year <- data |>
+  group_by(occurrence_year) |>
+  summarise(Homicides = n())
+homicides_by_year |>
+ ggplot(aes(x = occurrence_year, y = Homicides)) +  
+  geom_bar(stat = "identity") + 
+  geom_smooth(method = "lm", aes(group = 1), color = "blue") +
+  ggtitle("Figure 2.2.1") +
+  theme_minimal() + # Make the theme neater
+  labs(x = "Year", y = "Number of Homicides")
+```
+
+
+Figure 2.2.1 illustrates that although there has been a lot of volatility over the years in-terms of the trends, there is no doubt that homicides were increasing in the GTA over this period. The blue line through the chart is a linear regression with a positive slope.  If the chart doesn't illustrate the increase well enough, the mean number of homicides over the first half of the data was 67 per year while over the second half it was 69 per year. This represents a nearly 3% uptick in homicides over 9 year periods, an unsettlingly large percentage when considering the implications. 
+
+[BAR CHART OF HOMICIDES BY NEIGHBOURHOOD]
+```{r}
+data <- read_csv("/Users/alexanderguarasci/inputs/data/edited_data.csv")
+homicides_by_hood <- data |> count(neighbourhood)
+homicides_by_hood <- homicides_by_hood |> arrange(desc(n))
+homicides_by_hood
+homicides_by_hood|>
+  ggplot(aes(x = neighbourhood, y = n)) + # aes abbreviates "aesthetics" 
+  geom_bar(stat = "identity") + 
+  theme_minimal() +# Make the theme neater
+  theme(axis.text.x = element_blank()) + # remove the neighbourhood labels so the graph is legible
+  labs(x = "Neighbourhood", y = "Number of Homicides")
+
+```
+
+[BAR CHART OF HOMICIDE TYPE BREAKDOWN]
+```{r}
+data <- read_csv("/Users/alexanderguarasci/inputs/data/edited_data.csv")
+
+homicide_type <- data |> count(homicide_type)
+homicide_type|>
+  ggplot(aes(x = homicide_type, y = n)) + # aes abbreviates "aesthetics" 
+  geom_bar(stat = "identity") + 
+  theme_minimal() + # Make the theme neater
+  labs(x = "Type of Homicide", y = "Number of Homicides")
+```
+
+
+[SCATTER PLOT OF HOMICIDE TYPE PER YEAR]
+```{r}
+data <- read_csv("/Users/alexanderguarasci/inputs/data/edited_data.csv")
+
+# Summarize and arrange the data
+homicide_types_per_year <- data |>
+  group_by(occurrence_year, homicide_type) |>
+  summarise(Count = n(), .groups = 'drop') |>
+  arrange(occurrence_year, homicide_type)
+
+# Plot the data
+ggplot(homicide_types_per_year, aes(x = occurrence_year, y = Count, color = homicide_type)) +
+  geom_point() +
+  theme_minimal() + # Make the theme neater
+  labs(x = "Occurrence Year", y = "Count", color = "Homicide Type")
+
+
+# data <- read_csv("/Users/alexanderguarasci/inputs/data/unedited_data.csv")
+#   homicide_types_per_year <- data |>
+#   group_by(Occurrence_year, Homicide_Type) |>
+#   summarise(Count = n(), .groups = 'drop') 
+#   arrange(Occurrence_year, Neighbourhood)
+#   ggplot(homicides_per_neighbourhood_year, aes(y = Count, x = Neighbourhood, color = Occurrence_year)) +
+#     geom_point()
+#   
+  # homicide_types_per_year <- data |>
+  # group_by(Occurrence_year, Homicide_Type) |>
+  # summarise(Count = n(), .groups = 'drop')
+#doesn't work at all rn
+```
+
+
+
+# References
+
+List your references here. You can format them manually, or if you have a BibTeX file, you can use it to automatically format your references.
